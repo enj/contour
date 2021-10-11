@@ -257,6 +257,8 @@ type TLS struct {
 	// performs client validation as Contour will ensure client certificates
 	// are passed along.
 	//
+	// TODO fix comment
+	//
 	// +optional
 	ClientValidation *DownstreamValidation `json:"clientValidation,omitempty"`
 
@@ -815,6 +817,10 @@ type DownstreamValidation struct {
 	// presented to the external authorization server.
 	// +optional
 	SkipClientCertValidation bool `json:"skipClientCertValidation"`
+
+	// TODO comment
+	// +optional
+	ForwardClientCertificate bool `json:"forwardClientCertificate"`
 }
 
 // HTTPProxyStatus reports the current state of the HTTPProxy.

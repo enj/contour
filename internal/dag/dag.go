@@ -433,6 +433,8 @@ type PeerValidationContext struct {
 	// SkipClientCertValidation when set to true will ensure Envoy requests but
 	// does not verify peer certificates.
 	SkipClientCertValidation bool
+	// TODO comment
+	ForwardClientCertificate bool
 }
 
 // GetCACertificate returns the CA certificate from PeerValidationContext.

@@ -595,6 +595,11 @@ func (v *listenerVisitor) visit(vertex dag.Vertex) {
 		var alpnProtos []string
 		var filters []*envoy_listener_v3.Filter
 
+		var forwardClientCertificate bool
+		if vh.DownstreamValidation != nil {
+			forwardClientCertificate = vh.DownstreamValidation.ForwardClientCertificate
+		}
+
 		if vh.TCPProxy == nil {
 			var authFilter *http.HttpFilter
 
@@ -630,6 +635,7 @@ func (v *listenerVisitor) visit(vertex dag.Vertex) {
 				AllowChunkedLength(v.ListenerConfig.AllowChunkedLength).
 				NumTrustedHops(v.ListenerConfig.XffNumTrustedHops).
 				AddFilter(envoy_v3.GlobalRateLimitFilter(envoyGlobalRateLimitConfig(v.RateLimitConfig))).
+				ForwardClientCertificate(forwardClientCertificate).
 				Get()
 
 			filters = envoy_v3.Filters(cm)
@@ -694,6 +700,7 @@ func (v *listenerVisitor) visit(vertex dag.Vertex) {
 				AllowChunkedLength(v.ListenerConfig.AllowChunkedLength).
 				NumTrustedHops(v.ListenerConfig.XffNumTrustedHops).
 				AddFilter(envoy_v3.GlobalRateLimitFilter(envoyGlobalRateLimitConfig(v.RateLimitConfig))).
+				ForwardClientCertificate(forwardClientCertificate).
 				Get()
 
 			// Default filter chain

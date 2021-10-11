@@ -153,6 +153,7 @@ type httpConnectionManagerBuilder struct {
 	codec                         HTTPVersionType // Note the zero value is AUTO, which is the default we want.
 	allowChunkedLength            bool
 	numTrustedHops                uint32
+	forwardClientCertificate      bool
 }
 
 // RouteConfigName sets the name of the RDS element that contains
@@ -222,6 +223,11 @@ func (b *httpConnectionManagerBuilder) ConnectionShutdownGracePeriod(timeout tim
 
 func (b *httpConnectionManagerBuilder) AllowChunkedLength(enabled bool) *httpConnectionManagerBuilder {
 	b.allowChunkedLength = enabled
+	return b
+}
+
+func (b *httpConnectionManagerBuilder) ForwardClientCertificate(enabled bool) *httpConnectionManagerBuilder {
+	b.forwardClientCertificate = enabled
 	return b
 }
 
@@ -425,6 +431,20 @@ func (b *httpConnectionManagerBuilder) Get() *envoy_listener_v3.Filter {
 		cm.StatPrefix = b.metricsPrefix
 	} else {
 		cm.StatPrefix = b.routeConfigName
+	}
+
+	if b.forwardClientCertificate {
+		cm.ForwardClientCertDetails = http.HttpConnectionManager_SANITIZE_SET // do not allow the XFCC header to be spoofed
+		cm.SetCurrentClientCertDetails = &http.HttpConnectionManager_SetCurrentClientCertDetails{
+			// send every detail we have about the client certificate
+			// this could be expensive but XFCC is a relatively niche feature
+			// further knobs could be added in the future if necessary
+			Subject: protobuf.Bool(true),
+			Cert:    true,
+			Chain:   true,
+			Dns:     true,
+			Uri:     true,
+		}
 	}
 
 	return &envoy_listener_v3.Filter{

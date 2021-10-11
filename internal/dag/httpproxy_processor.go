@@ -241,6 +241,17 @@ func (p *HTTPProxyProcessor) computeHTTPProxy(proxy *contour_api_v1.HTTPProxy) {
 			if tls.ClientValidation != nil {
 				dv := &PeerValidationContext{
 					SkipClientCertValidation: tls.ClientValidation.SkipClientCertValidation,
+					// the validation below guarantees that either:
+					//   1. caSecret is set and skipClientCertValidation is any value
+					//   2. OR caSecret is not set and skipClientCertValidation is true
+					// both of these states guarantee that envoy will request a certificate
+					// from the client when clientValidation is specified.  this is critical
+					// for validating the forwardClientCertificate setting in the sense that
+					// a client must be requested to send a certificate, otherwise it never
+					// will per the TLS spec (https://www.rfc-editor.org/rfc/rfc5246#section-7.4.4).
+					// since we know that a client certificate will be requested, we can simply
+					// pass the forwardClientCertificate setting through without further validation.
+					ForwardClientCertificate: tls.ClientValidation.ForwardClientCertificate,
 				}
 				if tls.ClientValidation.CACertificate != "" {
 					secretName := k8s.NamespacedNameFrom(tls.ClientValidation.CACertificate, k8s.DefaultNamespace(proxy.Namespace))
