@@ -815,6 +815,7 @@ type DownstreamValidation struct {
 	// Envoy. If CACertificate is specified, client certificates are required on
 	// requests, but not verified. If external authorization is in use, they are
 	// presented to the external authorization server.
+	// TODO fix comment
 	// +optional
 	SkipClientCertValidation bool `json:"skipClientCertValidation"`
 
